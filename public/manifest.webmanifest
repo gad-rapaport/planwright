@@ -1,0 +1,11 @@
+{
+  "name": "Planwright",
+  "short_name": "Planwright",
+  "description": "Plan a budget, branch scenarios and compare them. Works offline.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f1e7",
+  "theme_color": "#f6f1e7",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
