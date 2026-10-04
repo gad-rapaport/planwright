@@ -8,6 +8,7 @@ const item = (over: Partial<LineItem>): LineItem => ({
   kind: 'expense',
   category: '',
   amount: 100,
+  cadence: 'monthly',
   start: 0,
   end: null,
   growth: 0,
@@ -24,6 +25,22 @@ describe('itemValueAt', () => {
     const grow = item({ amount: 1000, growth: 10, start: 1 });
     expect([1, 2, 3].map((m) => itemValueAt(grow, m))).toEqual([1000, 1100, 1210]);
     expect(itemValueAt(item({ amount: 333, growth: 1.5 }), 1)).toBe(338);
+  });
+
+  it('counts quarterly and yearly lines from their own first month', () => {
+    const q = item({ cadence: 'quarterly', start: 1 });
+    expect([0, 1, 2, 3, 4, 7].map((m) => itemValueAt(q, m))).toEqual([0, 100, 0, 0, 100, 100]);
+    const y = item({ cadence: 'yearly', start: 2, end: 20 });
+    expect([2, 13, 14, 26].map((m) => itemValueAt(y, m))).toEqual([100, 0, 100, 0]);
+  });
+
+  it('pays a one-off line once, whatever its end month says', () => {
+    const once = item({ cadence: 'once', start: 3, end: 10 });
+    expect([2, 3, 4, 10].map((m) => itemValueAt(once, m))).toEqual([0, 100, 0, 0]);
+  });
+
+  it('compounds growth by elapsed months, also for quarterly lines', () => {
+    expect(itemValueAt(item({ cadence: 'quarterly', amount: 1000, growth: 1 }), 3)).toBe(1030);
   });
 
   it('handles shrinking lines', () => {

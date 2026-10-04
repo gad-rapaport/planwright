@@ -587,19 +587,22 @@ input[aria-invalid='true'] {
   table-layout: fixed;
 }
 .items col.c-cat {
-  width: 8rem;
+  width: 7rem;
 }
 .items col.c-amount {
   width: 7.5rem;
 }
+.items col.c-cadence {
+  width: 7.5rem;
+}
 .items col.c-month {
-  width: 8.75rem;
+  width: 8.25rem;
 }
 .items col.c-growth {
-  width: 6.75rem;
+  width: 6.25rem;
 }
 .items col.c-actions {
-  width: 12.25rem;
+  width: 5.75rem;
 }
 .items th {
   text-align: left;
@@ -623,7 +626,7 @@ input[aria-invalid='true'] {
   text-align: right;
 }
 .items .actions .btn + .btn {
-  margin-left: 6px;
+  margin-left: 4px;
 }
 .row--added td:first-child {
   box-shadow: inset 4px 0 0 var(--good);
@@ -991,7 +994,7 @@ input[aria-invalid='true'] {
 }
 
 /* Below this width the item tables become stacked cards with labels. */
-@media (max-width: 1100px) {
+@media (max-width: 1280px) {
   .items colgroup {
     display: none;
   }
@@ -1040,7 +1043,7 @@ input[aria-invalid='true'] {
     text-align: left;
   }
 }
-@media (min-width: 640px) and (max-width: 1100px) {
+@media (min-width: 640px) and (max-width: 1280px) {
   .items tr {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }

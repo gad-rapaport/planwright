@@ -1,4 +1,4 @@
-import type { Currency } from './types';
+import type { Cadence, Currency } from './types';
 
 const cache = new Map<string, Intl.NumberFormat>();
 
@@ -35,4 +35,17 @@ export function compactMoney(value: number, currency: Currency): string {
 const plain = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 });
 export function number(value: number): string {
   return plain.format(value);
+}
+
+export const CADENCE_LABEL: Record<Cadence, string> = {
+  monthly: 'Monthly',
+  quarterly: 'Quarterly',
+  yearly: 'Yearly',
+  once: 'Once',
+};
+
+/** "₪3,300 a quarter", "₪12,000 once". */
+export function perCadence(amount: number, cadence: Cadence, currency: Currency): string {
+  const tail = { monthly: 'a month', quarterly: 'a quarter', yearly: 'a year', once: 'once' }[cadence];
+  return `${money(amount, currency)} ${tail}`;
 }

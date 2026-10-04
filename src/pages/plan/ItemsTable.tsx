@@ -1,21 +1,61 @@
 import { useState } from 'react';
 import { itemValueAt } from '../../domain/engine';
-import { money } from '../../domain/format';
-import { addItem, allItemIds, itemStatus, removeItem, revertItem, setItemField } from '../../domain/scenario';
-import { LIMITS, type EditableField, type Kind, type LineItem } from '../../domain/types';
-import { useStore } from '../../state/store';
-import { Badge, MonthField, NumberField, TextField } from '../../ui/fields';
+import { CADENCE_LABEL, money } from '../../domain/format';
 import { slugId } from '../../domain/ids';
+import { addItem, allItemIds, itemStatus, removeItem, revertItem, setItemField } from '../../domain/scenario';
+import {
+  CADENCES,
+  LIMITS,
+  type Cadence,
+  type EditableField,
+  type Kind,
+  type LineItem,
+} from '../../domain/types';
+import { useStore } from '../../state/store';
+import { Badge, MonthField, NumberField, SelectField, TextField } from '../../ui/fields';
 
 const FIELD_LABEL: Record<EditableField, string> = {
   name: 'name',
   kind: 'type',
   category: 'category',
   amount: 'amount',
+  cadence: 'frequency',
   start: 'start month',
   end: 'end month',
   growth: 'growth',
 };
+
+const CADENCE_OPTIONS = CADENCES.map((c) => ({ value: c, label: CADENCE_LABEL[c] }));
+
+function IconButton({
+  label,
+  onClick,
+  icon,
+}: {
+  label: string;
+  onClick: () => void;
+  icon: 'revert' | 'remove';
+}) {
+  return (
+    <button type="button" className="btn btn--quiet btn--icon" title={label} onClick={onClick}>
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+        {icon === 'revert' ? (
+          <path
+            d="M5 3 L2 6 L5 9 M2 6 H11 a4.5 4.5 0 0 1 0 9 H6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        ) : (
+          <path d="M4 4 L14 14 M14 4 L4 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        )}
+      </svg>
+      <span className="visually-hidden">{label}</span>
+    </button>
+  );
+}
 
 export function ItemsTable({ kind, items }: { kind: Kind; items: LineItem[] }) {
   const { ws, scenarioId, edit } = useStore();
@@ -24,7 +64,7 @@ export function ItemsTable({ kind, items }: { kind: Kind; items: LineItem[] }) {
   const { currency, startMonth, months } = ws.plan;
   const title = kind === 'income' ? 'Income' : 'Expenses';
   const headingId = `items-${kind}`;
-  const monthlyTotal = items.reduce((sum, it) => sum + itemValueAt(it, 0), 0);
+  const firstMonth = items.reduce((sum, it) => sum + itemValueAt(it, 0), 0);
 
   const setField = <K extends EditableField>(item: LineItem, field: K, value: LineItem[K]) =>
     edit(
@@ -40,7 +80,7 @@ export function ItemsTable({ kind, items }: { kind: Kind; items: LineItem[] }) {
       <div className="sheet__head">
         <h2 id={headingId}>{title}</h2>
         <p className="muted">
-          {items.length} line{items.length === 1 ? '' : 's'} · {money(monthlyTotal, currency)} in the first
+          {items.length} line{items.length === 1 ? '' : 's'} · {money(firstMonth, currency)} in the first
           month
         </p>
       </div>
@@ -52,6 +92,7 @@ export function ItemsTable({ kind, items }: { kind: Kind; items: LineItem[] }) {
             <col />
             <col className="c-cat" />
             <col className="c-amount" />
+            <col className="c-cadence" />
             <col className="c-month" />
             <col className="c-month" />
             <col className="c-growth" />
@@ -62,12 +103,13 @@ export function ItemsTable({ kind, items }: { kind: Kind; items: LineItem[] }) {
               <th scope="col">Name</th>
               <th scope="col">Category</th>
               <th scope="col" className="num">
-                Per month ({currency})
+                Amount ({currency})
               </th>
+              <th scope="col">Every</th>
               <th scope="col">From</th>
               <th scope="col">Until</th>
               <th scope="col" className="num">
-                Growth % / month
+                Growth %/mo
               </th>
               <th scope="col">
                 <span className="visually-hidden">Actions</span>
@@ -78,6 +120,7 @@ export function ItemsTable({ kind, items }: { kind: Kind; items: LineItem[] }) {
             {items.map((item) => {
               const st = status.get(item.id);
               const changed = (f: EditableField) => st?.status === 'changed' && st.fields.has(f);
+              const once = item.cadence === 'once';
               return (
                 <tr key={item.id} className={st ? `row--${st.status}` : undefined}>
                   <td data-label="Name">
@@ -103,9 +146,9 @@ export function ItemsTable({ kind, items }: { kind: Kind; items: LineItem[] }) {
                       onCommit={(v) => setField(item, 'category', v)}
                     />
                   </td>
-                  <td data-label={`Per month (${currency})`} className="num">
+                  <td data-label={`Amount (${currency})`} className="num">
                     <NumberField
-                      label={`Amount per month for ${item.name}`}
+                      label={`Amount for ${item.name}`}
                       hideLabel
                       value={item.amount}
                       min={0}
@@ -115,9 +158,19 @@ export function ItemsTable({ kind, items }: { kind: Kind; items: LineItem[] }) {
                       onCommit={(v) => setField(item, 'amount', v)}
                     />
                   </td>
-                  <td data-label="From">
+                  <td data-label="Every">
+                    <SelectField<Cadence>
+                      label={`How often ${item.name} occurs`}
+                      hideLabel
+                      value={item.cadence}
+                      options={CADENCE_OPTIONS}
+                      changed={changed('cadence')}
+                      onCommit={(v) => setField(item, 'cadence', v)}
+                    />
+                  </td>
+                  <td data-label={once ? 'In' : 'From'}>
                     <MonthField
-                      label={`First month of ${item.name}`}
+                      label={once ? `Month of ${item.name}` : `First month of ${item.name}`}
                       hideLabel
                       value={item.start}
                       startMonth={startMonth}
@@ -136,19 +189,23 @@ export function ItemsTable({ kind, items }: { kind: Kind; items: LineItem[] }) {
                     />
                   </td>
                   <td data-label="Until">
-                    <MonthField
-                      label={`Last month of ${item.name}`}
-                      hideLabel
-                      value={item.end}
-                      startMonth={startMonth}
-                      months={months}
-                      min={item.start}
-                      allowOpen
-                      changed={changed('end')}
-                      onCommit={(v) => setField(item, 'end', v)}
-                    />
+                    {once ? (
+                      <span className="muted small">One payment</span>
+                    ) : (
+                      <MonthField
+                        label={`Last month of ${item.name}`}
+                        hideLabel
+                        value={item.end}
+                        startMonth={startMonth}
+                        months={months}
+                        min={item.start}
+                        allowOpen
+                        changed={changed('end')}
+                        onCommit={(v) => setField(item, 'end', v)}
+                      />
+                    )}
                   </td>
-                  <td data-label="Growth % / month" className="num">
+                  <td data-label="Growth % per month" className="num">
                     <NumberField
                       label={`Monthly growth for ${item.name}, percent`}
                       hideLabel
@@ -164,21 +221,17 @@ export function ItemsTable({ kind, items }: { kind: Kind; items: LineItem[] }) {
                   </td>
                   <td className="actions">
                     {st?.status === 'changed' && (
-                      <button
-                        type="button"
-                        className="btn btn--quiet"
+                      <IconButton
+                        icon="revert"
+                        label={`Revert ${item.name}`}
                         onClick={() => edit(`Revert ${item.name}`, (w) => revertItem(w, scenarioId, item.id))}
-                      >
-                        Revert<span className="visually-hidden"> {item.name}</span>
-                      </button>
+                      />
                     )}
-                    <button
-                      type="button"
-                      className="btn btn--quiet"
+                    <IconButton
+                      icon="remove"
+                      label={`Remove ${item.name}`}
                       onClick={() => edit(`Remove ${item.name}`, (w) => removeItem(w, scenarioId, item.id))}
-                    >
-                      Remove<span className="visually-hidden"> {item.name}</span>
-                    </button>
+                    />
                   </td>
                 </tr>
               );
@@ -195,6 +248,7 @@ function AddItem({ kind, scenarioLabel }: { kind: Kind; scenarioLabel: string })
   const { ws, scenarioId, edit } = useStore();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
+  const [cadence, setCadence] = useState<Cadence>('monthly');
   const [error, setError] = useState<string | null>(null);
   const noun = kind === 'income' ? 'income' : 'expense';
   return (
@@ -216,6 +270,7 @@ function AddItem({ kind, scenarioLabel }: { kind: Kind; scenarioLabel: string })
           kind,
           category: '',
           amount: n,
+          cadence,
           start: 0,
           end: null,
           growth: 0,
@@ -236,13 +291,23 @@ function AddItem({ kind, scenarioLabel }: { kind: Kind; scenarioLabel: string })
         />
       </label>
       <label>
-        <span>Per month</span>
+        <span>Amount</span>
         <input
           value={amount}
           inputMode="numeric"
           onChange={(e) => setAmount(e.target.value)}
           placeholder="0"
         />
+      </label>
+      <label>
+        <span>Every</span>
+        <select value={cadence} onChange={(e) => setCadence(e.target.value as Cadence)}>
+          {CADENCE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
       </label>
       <button type="submit" className="btn">
         Add to {scenarioLabel}

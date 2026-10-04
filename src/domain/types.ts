@@ -3,10 +3,13 @@ export type Currency = (typeof CURRENCIES)[number];
 
 export type Kind = 'income' | 'expense';
 
+export const CADENCES = ['monthly', 'quarterly', 'yearly', 'once'] as const;
+export type Cadence = (typeof CADENCES)[number];
+
 /**
- * One recurring line of the plan. Amounts are whole currency units per month; `start` and `end` are month
- * offsets from the plan start (inclusive), `end: null` runs to the end of the plan. `growth` is percent per
- * month, compounded from the item's first month.
+ * One line of the plan. `amount` is whole currency units per occurrence; `cadence` says how often it occurs,
+ * counted from `start`. `start` and `end` are month offsets from the plan start (inclusive), `end: null` runs
+ * to the end of the plan. `growth` is percent per month, compounded from the item's first month.
  */
 export interface LineItem {
   id: string;
@@ -14,6 +17,7 @@ export interface LineItem {
   kind: Kind;
   category: string;
   amount: number;
+  cadence: Cadence;
   start: number;
   end: number | null;
   growth: number;

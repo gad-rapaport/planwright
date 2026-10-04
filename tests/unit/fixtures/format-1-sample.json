@@ -1,0 +1,204 @@
+{
+  "format": "planwright",
+  "version": 1,
+  "exportedAt": "2026-10-04T16:03:30.890Z",
+  "workspace": {
+    "plan": {
+      "name": "Riverside Bike Workshop (sample)",
+      "currency": "ILS",
+      "startMonth": "2027-01",
+      "months": 24,
+      "openingBalance": 60000
+    },
+    "items": [
+      {
+        "id": "repairs",
+        "name": "Repairs and servicing",
+        "kind": "income",
+        "category": "Sales",
+        "amount": 26000,
+        "start": 0,
+        "end": null,
+        "growth": 1
+      },
+      {
+        "id": "memberships",
+        "name": "Memberships",
+        "kind": "income",
+        "category": "Sales",
+        "amount": 3600,
+        "start": 0,
+        "end": null,
+        "growth": 2
+      },
+      {
+        "id": "school-workshops",
+        "name": "Workshops for schools",
+        "kind": "income",
+        "category": "Programmes",
+        "amount": 4500,
+        "start": 2,
+        "end": null,
+        "growth": 0
+      },
+      {
+        "id": "rent",
+        "name": "Workshop rent",
+        "kind": "expense",
+        "category": "Premises",
+        "amount": 7800,
+        "start": 0,
+        "end": null,
+        "growth": 0
+      },
+      {
+        "id": "wages",
+        "name": "Mechanics' wages",
+        "kind": "expense",
+        "category": "People",
+        "amount": 21000,
+        "start": 0,
+        "end": null,
+        "growth": 0
+      },
+      {
+        "id": "parts",
+        "name": "Parts and stock",
+        "kind": "expense",
+        "category": "Stock",
+        "amount": 4200,
+        "start": 0,
+        "end": null,
+        "growth": 1
+      },
+      {
+        "id": "utilities",
+        "name": "Utilities",
+        "kind": "expense",
+        "category": "Premises",
+        "amount": 1100,
+        "start": 0,
+        "end": null,
+        "growth": 0
+      },
+      {
+        "id": "insurance",
+        "name": "Insurance and accounting",
+        "kind": "expense",
+        "category": "Admin",
+        "amount": 1600,
+        "start": 0,
+        "end": null,
+        "growth": 0
+      },
+      {
+        "id": "fees",
+        "name": "Software and card fees",
+        "kind": "expense",
+        "category": "Admin",
+        "amount": 450,
+        "start": 0,
+        "end": null,
+        "growth": 0
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "base",
+        "name": "Baseline",
+        "parentId": null,
+        "notes": "Current setup: two mechanics, existing space.",
+        "changes": []
+      },
+      {
+        "id": "apprentice",
+        "name": "Hire an apprentice",
+        "parentId": "base",
+        "notes": "An apprentice from April adds repair capacity from May.",
+        "changes": [
+          {
+            "type": "add",
+            "item": {
+              "id": "apprentice-wage",
+              "name": "Apprentice wage",
+              "kind": "expense",
+              "category": "People",
+              "amount": 7500,
+              "start": 3,
+              "end": null,
+              "growth": 0
+            }
+          },
+          {
+            "type": "add",
+            "item": {
+              "id": "extra-capacity",
+              "name": "Extra repair capacity",
+              "kind": "income",
+              "category": "Sales",
+              "amount": 6500,
+              "start": 4,
+              "end": null,
+              "growth": 1.5
+            }
+          }
+        ]
+      },
+      {
+        "id": "slow-year",
+        "name": "Slow first year",
+        "parentId": "base",
+        "notes": "Fewer repairs, slower growth, no school programme.",
+        "changes": [
+          {
+            "type": "set",
+            "itemId": "repairs",
+            "field": "amount",
+            "value": 23000
+          },
+          {
+            "type": "set",
+            "itemId": "repairs",
+            "field": "growth",
+            "value": 0.3
+          },
+          {
+            "type": "remove",
+            "itemId": "school-workshops"
+          }
+        ]
+      },
+      {
+        "id": "bigger-space",
+        "name": "Apprentice + bigger space",
+        "parentId": "apprentice",
+        "notes": "Move to a larger unit; moving costs come out of the opening balance.",
+        "changes": [
+          {
+            "type": "set",
+            "itemId": "rent",
+            "field": "amount",
+            "value": 11500
+          },
+          {
+            "type": "opening",
+            "value": 35000
+          },
+          {
+            "type": "add",
+            "item": {
+              "id": "club-rental",
+              "name": "Space rental to clubs",
+              "kind": "income",
+              "category": "Programmes",
+              "amount": 1800,
+              "start": 6,
+              "end": null,
+              "growth": 0
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
