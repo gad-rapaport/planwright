@@ -3,11 +3,41 @@ import { CURRENT_FORMAT_VERSION, fileSchema } from './schema';
 
 export const MAX_IMPORT_BYTES = 1_000_000;
 
+type Doc = Record<string, unknown>;
+
+const isObject = (v: unknown): v is Doc => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** Adds `cadence: 'monthly'` to an item that has none (format 1 only had monthly lines). */
+function withMonthly(item: unknown): unknown {
+  return isObject(item) && !('cadence' in item) ? { ...item, cadence: 'monthly' } : item;
+}
+
 /**
- * Upgrades older files step by step: MIGRATIONS[n] turns a version-n document into version n+1.
- * Empty while only format 1 exists; a new format adds one function here and a fixture test.
+ * Upgrades older files step by step: MIGRATIONS[n] turns a version-n document into version n+1. Each step
+ * only reshapes what it knows about and leaves validation to the schema, so a damaged old file still gets
+ * precise error messages. tests/unit/fixtures holds a real file of every older format.
  */
-export const MIGRATIONS: Record<number, (doc: Record<string, unknown>) => Record<string, unknown>> = {};
+export const MIGRATIONS: Record<number, (doc: Doc) => Doc> = {
+  // 1 -> 2: lines gained a cadence (monthly, quarterly, yearly, once). Every format-1 line was monthly.
+  1: (doc) => {
+    const ws = doc.workspace;
+    if (!isObject(ws)) return doc;
+    const items = Array.isArray(ws.items) ? ws.items.map(withMonthly) : ws.items;
+    const scenarios = Array.isArray(ws.scenarios)
+      ? ws.scenarios.map((s) =>
+          isObject(s) && Array.isArray(s.changes)
+            ? {
+                ...s,
+                changes: s.changes.map((c) =>
+                  isObject(c) && c.type === 'add' ? { ...c, item: withMonthly(c.item) } : c,
+                ),
+              }
+            : s,
+        )
+      : ws.scenarios;
+    return { ...doc, workspace: { ...ws, items, scenarios } };
+  },
+};
 
 export type ImportResult =
   { ok: true; workspace: Workspace; fromVersion: number; summary: string } | { ok: false; errors: string[] };

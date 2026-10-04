@@ -25,6 +25,7 @@ const extra = (id: string): LineItem => ({
   kind: 'income',
   category: '',
   amount: 10,
+  cadence: 'monthly',
   start: 0,
   end: null,
   growth: 0,

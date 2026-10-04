@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { findScenario } from '../domain/scenario';
 import type { Workspace } from '../domain/types';
+import { CADENCE_LABEL } from '../domain/format';
 import { toCsv } from '../io/csv';
 import { exportWorkspace, MAX_IMPORT_BYTES, parseImport, summarize } from '../io/fileFormat';
 import { CURRENT_FORMAT_VERSION } from '../io/schema';
@@ -17,6 +18,7 @@ export function itemsCsv(ws: Workspace, scenarioName: string, items: Workspace['
     i.kind === 'income' ? 'Income' : 'Expense',
     i.category,
     i.amount,
+    CADENCE_LABEL[i.cadence],
     monthLabel(ws.plan.startMonth, i.start),
     i.end === null ? '' : monthLabel(ws.plan.startMonth, i.end),
     i.growth,
@@ -27,7 +29,8 @@ export function itemsCsv(ws: Workspace, scenarioName: string, items: Workspace['
       'Line',
       'Type',
       'Category',
-      `Per month (${ws.plan.currency})`,
+      `Amount (${ws.plan.currency})`,
+      'Every',
       'From',
       'Until',
       'Growth % per month',

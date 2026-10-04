@@ -5,7 +5,7 @@ test('phone layout: scenario picker, stacked lines, no sideways scrolling', asyn
   await page.goto('/');
   await page.getByRole('combobox', { name: 'Scenario' }).selectOption('slow-year');
   await expect(page.getByRole('heading', { level: 1, name: 'Slow first year' })).toBeVisible();
-  await expect(page.getByLabel(/^Amount per month for Repairs and servicing/)).toHaveValue('23000');
+  await expect(page.getByLabel(/^Amount for Repairs and servicing/)).toHaveValue('23000');
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );

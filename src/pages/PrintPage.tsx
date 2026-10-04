@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { money } from '../domain/format';
+import { CADENCE_LABEL, money, perCadence } from '../domain/format';
 import { monthLabel } from '../domain/months';
 import { parentOf, resolve } from '../domain/scenario';
 import type { Scenario, Workspace } from '../domain/types';
@@ -18,19 +18,21 @@ export function describeChanges(ws: Workspace, scenario: Scenario): string[] {
   const show = (field: string, v: unknown) =>
     field === 'amount'
       ? money(Number(v), currency)
-      : field === 'growth'
-        ? `${String(v)}% a month`
-        : field === 'start'
-          ? monthLabel(startMonth, Number(v))
-          : field === 'end'
-            ? v === null
-              ? 'the end of the plan'
-              : monthLabel(startMonth, Number(v))
-            : String(v);
+      : field === 'cadence'
+        ? CADENCE_LABEL[v as keyof typeof CADENCE_LABEL].toLowerCase()
+        : field === 'growth'
+          ? `${String(v)}% a month`
+          : field === 'start'
+            ? monthLabel(startMonth, Number(v))
+            : field === 'end'
+              ? v === null
+                ? 'the end of the plan'
+                : monthLabel(startMonth, Number(v))
+              : String(v);
   return scenario.changes.map((c) => {
     switch (c.type) {
       case 'add':
-        return `Adds ${c.item.name}: ${money(c.item.amount, currency)} a month ${c.item.kind === 'income' ? 'income' : 'expense'} from ${monthLabel(startMonth, c.item.start)}`;
+        return `Adds ${c.item.kind === 'income' ? 'income' : 'expense'} ${c.item.name}: ${perCadence(c.item.amount, c.item.cadence, currency)} ${c.item.cadence === 'once' ? 'in' : 'from'} ${monthLabel(startMonth, c.item.start)}`;
       case 'remove':
         return `Removes ${name(c.itemId)}`;
       case 'opening':
@@ -42,6 +44,7 @@ export function describeChanges(ws: Workspace, scenario: Scenario): string[] {
           kind: 'type',
           category: 'category',
           amount: 'amount',
+          cadence: 'frequency',
           start: 'first month',
           end: 'last month',
           growth: 'growth',

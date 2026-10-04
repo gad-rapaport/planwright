@@ -12,6 +12,7 @@ function largest(): Workspace {
     kind: i % 3 === 0 ? 'income' : 'expense',
     category: '',
     amount: 1000 + i,
+    cadence: i % 7 === 0 ? 'quarterly' : 'monthly',
     start: i % 12,
     end: null,
     growth: (i % 5) / 10,

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { isMonth } from '../domain/months';
-import { BASE_ID, CURRENCIES, LIMITS } from '../domain/types';
+import { BASE_ID, CADENCES, CURRENCIES, LIMITS } from '../domain/types';
 
 const id = z.string().regex(/^[a-z0-9-]{1,40}$/, 'must be 1-40 lowercase letters, digits or dashes');
 const name = z.string().trim().min(1, 'must not be empty').max(LIMITS.name);
@@ -18,6 +18,7 @@ export const lineItemSchema = z.strictObject({
   kind: z.enum(['income', 'expense']),
   category: z.string().trim().max(40),
   amount,
+  cadence: z.enum(CADENCES),
   start: offset,
   end: offset.nullable(),
   growth,
@@ -28,6 +29,7 @@ const fieldValue = {
   kind: z.enum(['income', 'expense']),
   category: z.string().trim().max(40),
   amount,
+  cadence: z.enum(CADENCES),
   start: offset,
   end: offset.nullable(),
   growth,
@@ -38,7 +40,7 @@ const changeSchema = z
     z.strictObject({
       type: z.literal('set'),
       itemId: id,
-      field: z.enum(['name', 'kind', 'category', 'amount', 'start', 'end', 'growth']),
+      field: z.enum(['name', 'kind', 'category', 'amount', 'cadence', 'start', 'end', 'growth']),
       value: z.union([z.string(), z.number(), z.null()]),
     }),
     z.strictObject({ type: z.literal('add'), item: lineItemSchema }),
@@ -133,7 +135,7 @@ export const workspaceSchema = z
     ws.items.forEach((it, i) => checkRange(it, ['items', i]));
   });
 
-export const CURRENT_FORMAT_VERSION = 1;
+export const CURRENT_FORMAT_VERSION = 2;
 
 export const fileSchema = z.strictObject({
   format: z.literal('planwright'),

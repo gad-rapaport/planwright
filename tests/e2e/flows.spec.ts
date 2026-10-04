@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { blur, downloadedText, expectNoAxeViolations } from './helpers';
 
-const rentAmount = /^Amount per month for Workshop rent/;
+const rentAmount = /^Amount for Workshop rent/;
 
 test.describe('editing and history', () => {
   test('a branch stores an override; undo and redo work from the keyboard', async ({ page }) => {
@@ -12,9 +12,7 @@ test.describe('editing and history', () => {
     const rent = page.getByLabel(rentAmount);
     await rent.fill('9000');
     await expect(page.getByText('Changed here')).toBeVisible();
-    await expect(
-      page.getByLabel('Amount per month for Workshop rent (changed in this scenario)'),
-    ).toHaveValue('9000');
+    await expect(page.getByLabel('Amount for Workshop rent (changed in this scenario)')).toHaveValue('9000');
 
     await blur(page);
     await page.keyboard.press('Control+z');
@@ -88,7 +86,7 @@ test.describe('comparison, export and import', () => {
       'Slow first year',
       'Apprentice + bigger space',
     ]);
-    await expect(metrics.getByRole('row', { name: /Cash runs out/ })).toContainText('Apr 2027');
+    await expect(metrics.getByRole('row', { name: /Cash runs out/ })).toContainText('Mar 2027');
 
     await page.getByRole('checkbox', { name: 'Slow first year' }).uncheck();
     await expect(metrics.getByRole('columnheader')).toHaveCount(4);
@@ -137,7 +135,7 @@ test.describe('comparison, export and import', () => {
       page.getByRole('button', { name: 'Plan file (JSON)' }).click(),
     ]);
     const json = await downloadedText(download);
-    expect(JSON.parse(json)).toMatchObject({ format: 'planwright', version: 1 });
+    expect(JSON.parse(json)).toMatchObject({ format: 'planwright', version: 2 });
 
     await page.getByRole('button', { name: 'Load sample plan' }).click();
     await expect(page.locator('.brand__plan')).toHaveText('Riverside Bike Workshop (sample)');
@@ -148,7 +146,7 @@ test.describe('comparison, export and import', () => {
       mimeType: 'application/json',
       buffer: Buffer.from('{"format":"planwright","version":9}'),
     });
-    await expect(page.getByRole('alert')).toContainText('reads up to format 1');
+    await expect(page.getByRole('alert')).toContainText('reads up to format 2');
 
     await input.setInputFiles({ name: 'plan.json', mimeType: 'application/json', buffer: Buffer.from(json) });
     await expect(page.getByRole('status').filter({ hasText: 'plan.json' })).toContainText(
@@ -157,6 +155,38 @@ test.describe('comparison, export and import', () => {
     await page.getByRole('button', { name: 'Replace current plan' }).click();
     await expect(page.locator('.brand__plan')).toHaveText('Exported plan');
     await expectNoAxeViolations(page);
+  });
+});
+
+test.describe('cadence and older files', () => {
+  test('a quarterly line only counts every third month', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel(/^How often Utilities occurs/).selectOption('quarterly');
+    await page.getByRole('link', { name: 'Compare' }).click();
+    await page.getByText('Monthly figures').click();
+    const table = page.getByRole('region', { name: 'Monthly figures table' });
+    const baselineNet = (month: string) =>
+      table
+        .getByRole('row', { name: new RegExp(`^${month}`) })
+        .getByRole('cell')
+        .first();
+    // Utilities (1,100) now fall in Jan, Apr, Jul and Oct only.
+    await expect(baselineNet('Jan 2027')).toHaveText('-₪8,250');
+    await expect(baselineNet('Feb 2027')).toHaveText('-₪3,560');
+  });
+
+  test('a format-1 file imports with an upgrade notice', async ({ page }) => {
+    await page.goto('/data');
+    await page
+      .getByLabel(/Choose a Planwright plan file/)
+      .setInputFiles('tests/unit/fixtures/format-1-sample.json');
+    await expect(page.getByRole('status').filter({ hasText: 'format-1-sample.json' })).toContainText(
+      'Upgraded from format 1.',
+    );
+    await page.getByRole('button', { name: 'Replace current plan' }).click();
+    await page.getByRole('link', { name: 'Plan', exact: true }).click();
+    // Format 1 had a single monthly "Insurance and accounting" line.
+    await expect(page.getByLabel(/^How often Insurance and accounting occurs/)).toHaveValue('monthly');
   });
 });
 

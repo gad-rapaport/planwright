@@ -11,8 +11,19 @@ export function sampleWorkspace(): Workspace {
     kind: LineItem['kind'],
     category: string,
     amount: number,
-    extra: Partial<Pick<LineItem, 'start' | 'end' | 'growth'>> = {},
-  ): LineItem => ({ id, name, kind, category, amount, start: 0, end: null, growth: 0, ...extra });
+    extra: Partial<Pick<LineItem, 'cadence' | 'start' | 'end' | 'growth'>> = {},
+  ): LineItem => ({
+    id,
+    name,
+    kind,
+    category,
+    amount,
+    cadence: 'monthly',
+    start: 0,
+    end: null,
+    growth: 0,
+    ...extra,
+  });
 
   return {
     plan: {
@@ -30,7 +41,8 @@ export function sampleWorkspace(): Workspace {
       item('wages', "Mechanics' wages", 'expense', 'People', 21_000),
       item('parts', 'Parts and stock', 'expense', 'Stock', 4_200, { growth: 1 }),
       item('utilities', 'Utilities', 'expense', 'Premises', 1_100),
-      item('insurance', 'Insurance and accounting', 'expense', 'Admin', 1_600),
+      item('insurance', 'Insurance', 'expense', 'Admin', 3_300, { cadence: 'quarterly' }),
+      item('accounts', 'Annual accounts', 'expense', 'Admin', 6_000, { cadence: 'yearly', start: 2 }),
       item('fees', 'Software and card fees', 'expense', 'Admin', 450),
     ],
     scenarios: [
@@ -75,13 +87,21 @@ export function sampleWorkspace(): Workspace {
         id: 'bigger-space',
         name: 'Apprentice + bigger space',
         parentId: 'apprentice',
-        notes: 'Move to a larger unit; moving costs come out of the opening balance.',
+        notes:
+          'Move to a larger unit: moving costs come out of the opening balance, fitting it out costs extra in February.',
         changes: [
           { type: 'set', itemId: 'rent', field: 'amount', value: 11_500 },
           { type: 'opening', value: 35_000 },
           {
             type: 'add',
             item: item('club-rental', 'Space rental to clubs', 'income', 'Programmes', 1_800, { start: 6 }),
+          },
+          {
+            type: 'add',
+            item: item('fit-out', 'Fit-out of the new unit', 'expense', 'Premises', 12_000, {
+              cadence: 'once',
+              start: 1,
+            }),
           },
         ],
       },

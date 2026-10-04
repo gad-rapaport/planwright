@@ -24,11 +24,16 @@ export interface Projection {
   summary: Summary;
 }
 
+const EVERY: Record<LineItem['cadence'], number> = { monthly: 1, quarterly: 3, yearly: 12, once: 0 };
+
 /** Value of an item in month `m` (whole units, rounded per month so rows add up exactly). */
 export function itemValueAt(item: LineItem, m: number): number {
   if (m < item.start || (item.end !== null && m > item.end)) return 0;
+  const offset = m - item.start;
+  const every = EVERY[item.cadence];
+  if (every === 0 ? offset !== 0 : offset % every !== 0) return 0;
   if (item.growth === 0) return item.amount;
-  return Math.round(item.amount * Math.pow(1 + item.growth / 100, m - item.start));
+  return Math.round(item.amount * Math.pow(1 + item.growth / 100, offset));
 }
 
 /** Month-by-month projection. Pure and allocation-light: called for every scenario on every edit. */
