@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /** Regenerates docs/screenshots from the running image: npm run screenshots */
 const dir = 'docs/screenshots';
@@ -9,17 +9,20 @@ test('documentation screenshots', async ({ page, browser, baseURL }) => {
   await page.screenshot({ path: `${dir}/plan-branch.png` });
 
   await page.goto('/compare');
+  await expect(page.getByRole('heading', { name: 'Compare scenarios' })).toBeVisible();
   await page.getByRole('group', { name: /Closing balance/ }).focus();
   for (let i = 0; i < 16; i++) await page.keyboard.press('ArrowRight');
   await page.screenshot({ path: `${dir}/compare.png` });
 
   await page.goto('/print');
+  await expect(page.getByText('What each scenario assumes')).toBeVisible();
   await page.emulateMedia({ media: 'print' });
   await page.screenshot({ path: `${dir}/print.png`, fullPage: true });
   await page.emulateMedia({ media: 'screen' });
 
   const dark = await browser.newPage({ viewport: { width: 1440, height: 900 }, colorScheme: 'dark' });
   await dark.goto(`${baseURL}/compare`);
+  await expect(dark.getByRole('heading', { name: 'Compare scenarios' })).toBeVisible();
   await dark.screenshot({ path: `${dir}/compare-dark.png` });
   await dark.close();
 
