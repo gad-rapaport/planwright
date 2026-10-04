@@ -1,0 +1,30 @@
+# Planwright demo (static site, Slim defaults).
+#   docker compose up -d --build --wait
+# See docs/SETUP.md and docs/SLIM.md.
+name: planwright
+
+services:
+  web:
+    build: .
+    image: planwright:${IMAGE_TAG:-local}
+    ports:
+      - '127.0.0.1:8104:8080'
+    # Starts with `up`, never on its own after a reboot (the portfolio is started on demand).
+    restart: on-failure:3
+    read_only: true
+    tmpfs:
+      # nginx-unprivileged keeps its pid file and temp paths under /tmp.
+      - /tmp:size=8m
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 32M
+          pids: 32
+    logging:
+      driver: json-file
+      options:
+        max-size: 2m
+        max-file: '2'
