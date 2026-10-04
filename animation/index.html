@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Planwright product film</title>
+    <style>
+      @font-face {
+        font-family: 'Fraunces';
+        font-weight: 600;
+        src: url('../node_modules/@fontsource/fraunces/files/fraunces-latin-600-normal.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Public Sans';
+        font-weight: 400;
+        src: url('../node_modules/@fontsource/public-sans/files/public-sans-latin-400-normal.woff2')
+          format('woff2');
+      }
+      @font-face {
+        font-family: 'Public Sans';
+        font-weight: 600;
+        src: url('../node_modules/@fontsource/public-sans/files/public-sans-latin-600-normal.woff2')
+          format('woff2');
+      }
+      html,
+      body {
+        margin: 0;
+        background: #111;
+      }
+      svg {
+        display: block;
+        width: 100vw;
+        height: auto;
+        max-height: 100vh;
+        margin: 0 auto;
+        font-family: 'Public Sans', sans-serif;
+      }
+      .is-render svg {
+        width: 1920px;
+        height: 1080px;
+        max-height: none;
+      }
+      .head {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+      }
+      .player {
+        position: fixed;
+        left: 50%;
+        bottom: 12px;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        background: rgb(0 0 0 / 70%);
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font: 14px system-ui;
+      }
+      .player input {
+        width: 360px;
+      }
+    </style>
+  </head>
+  <body>
+    <svg id="stage" viewBox="0 0 1920 1080" role="img" aria-label="Planwright product film"></svg>
+    <script src="motion.js"></script>
+    <script src="scene.js"></script>
+  </body>
+</html>
