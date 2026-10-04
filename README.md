@@ -9,6 +9,19 @@ the browser: it works offline, saves locally, exports and imports versioned file
 **Specialisation shown:** Frontend engineering: state design (branching overrides, undo/redo), UX for
 editing numbers, accessibility, offline support and performance budgets, in a static site with no backend.
 
+## Product film
+
+[![Play the 21-second Planwright product film](docs/media/poster.jpg)](https://github.com/gad-rapaport/planwright/releases/download/v0.1.0/planwright-film.mp4)
+
+21 seconds, no sound needed: a workshop owner weighs two decisions, branches the plan, sees each branch keep
+only its changes, compares the balances (real numbers exported from the app) and decides with the printed
+report. [Download or play the MP4](https://github.com/gad-rapaport/planwright/releases/download/v0.1.0/planwright-film.mp4)
+(release asset; needs access to this repository while it is private). Made from code in
+[animation/](animation/): [brief](docs/ANIMATION-BRIEF.md), [storyboard](docs/ANIMATION-STORYBOARD.md),
+[rendering](docs/ANIMATION-RENDERING.md).
+
+![Looping preview of the film: scenario sheets and balance strips](docs/media/preview.webp)
+
 ## What it does
 
 - **Branching scenarios.** Start from a baseline, branch "Hire an apprentice", branch again from that. A
